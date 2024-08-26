@@ -84,11 +84,11 @@ const Signup = () => {
         try{
             const config={
                 headers:{
-                    "Content-type":"application/json",
+                    "Content-Type":"application/json",
                 },
             };
             const { data } =await axios.post(
-                "http://localhost:5000/api/user",
+                "/api/user",
                 { name, email, password, pic },
                 config
             );
