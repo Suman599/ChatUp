@@ -8,7 +8,7 @@ import { getSender } from '../../config/ChatLogics';
 import GroupChatModal from './GroupChatModal';
 
 const MyChats = ({ fetchAgain }) => {
-  const [loggedUser, setLoggedUser] = useState();
+  const [loggedUser, setLoggedUser] = useState({});
   const { user, selectedChat, setSelectedChat, chats, setChats } = ChatState();
   const [isFetching, setIsFetching] = useState(false);
   const toast = useToast();
@@ -23,7 +23,10 @@ const MyChats = ({ fetchAgain }) => {
         },
       };
       const { data } = await axios.get('/api/chat', config);
-      setChats(data);
+
+      console.log("Fetched chats:", data); // Debugging line to check data structure
+
+      setChats(Array.isArray(data) ? data : []); // Ensure data is an array
     } catch (error) {
       toast({
         title: "Error occurred!",
@@ -33,18 +36,21 @@ const MyChats = ({ fetchAgain }) => {
         isClosable: true,
         position: "bottom-left",
       });
+      setChats([]); // Set chats to an empty array on error
     } finally {
       setIsFetching(false); // Reset fetching state
     }
   };
 
   useEffect(() => {
-    const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+    const userInfo = JSON.parse(localStorage.getItem("userInfo")) || {};
     setLoggedUser(userInfo);
     if (user?.token) {
       fetchChats();
     }
   }, [user?.token, fetchAgain]); // Fetch again when fetchAgain or user.token changes
+
+  console.log("Chats state:", chats); // Debugging line to check chats before render
 
   return (
     <Box
@@ -92,22 +98,30 @@ const MyChats = ({ fetchAgain }) => {
           <ChatLoading />
         ) : (
           <Stack overflowY="scroll">
-            {chats?.map((chat) => (
-              <Box
-                onClick={() => setSelectedChat(chat)}
-                cursor="pointer"
-                bg={selectedChat === chat ? "#38B2AC" : "#E8E8E8"}
-                color={selectedChat === chat ? "white" : "black"}
-                px={3}
-                py={2}
-                borderRadius="lg"
-                key={chat._id} // Ensure this is unique for each chat
-              >
-                <Text>
-                  {!chat.isGroupChat ? getSender(loggedUser, chat.users) : chat.chatName}
-                </Text>
-              </Box>
-            ))}
+            {Array.isArray(chats) ? (
+              chats.length > 0 ? (
+                chats.map((chat) => (
+                  <Box
+                    onClick={() => setSelectedChat(chat)}
+                    cursor="pointer"
+                    bg={selectedChat === chat ? "#38B2AC" : "#E8E8E8"}
+                    color={selectedChat === chat ? "white" : "black"}
+                    px={3}
+                    py={2}
+                    borderRadius="lg"
+                    key={chat._id} // Ensure this is unique for each chat
+                  >
+                    <Text>
+                      {!chat.isGroupChat ? getSender(loggedUser, chat.users) : chat.chatName}
+                    </Text>
+                  </Box>
+                ))
+              ) : (
+                <Text>No chats available</Text> // Handle the case where chats is empty
+              )
+            ) : (
+              <Text>Unexpected data format received for chats.</Text> // Fallback if chats isn't an array
+            )}
           </Stack>
         )}
       </Box>
