@@ -32,11 +32,11 @@ const Login = () => {
         try{
             const config={
                 headers:{
-                    "Content-type":"application/json",
+                    "Content-Type":"application/json",
                 },
             };
             const { data } =await axios.post(
-                "http://localhost:5000/api/user/login",
+                "/api/user/login",
                 { email, password },
                 config
             );
