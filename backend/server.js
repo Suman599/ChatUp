@@ -23,7 +23,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
     pingTimeout: 60000,
     cors: {
-        origin: "", // Adjust according to your frontend URL
+        origin: "https://chatup-v8fv.onrender.com/", // Adjust according to your frontend URL
         methods: ["GET", "POST"]
     }
 });
