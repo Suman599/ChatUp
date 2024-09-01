@@ -13,12 +13,14 @@ import {
   useToast,
   Box,
   Spinner,
+  IconButton,
 } from "@chakra-ui/react";
 import axios from "axios";
 import { useState } from "react";
 import { ChatState } from "../../Context/ChatProvider";
 import UserBadgeItem from "../UserAvatar/UserBadgeItem";
 import UserListItem from "../UserAvatar/UserListItem";
+import { ViewIcon } from "@chakra-ui/icons";
 
 const GroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
