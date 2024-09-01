@@ -19,8 +19,8 @@ import {
 import axios from "axios";
 import { useState } from "react";
 import { ChatState } from "../../Context/ChatProvider";
-import UserBadgeItem from "../UserAvatar/UserBadgeItem";  // Correct import
-import UserListItem from "../UserAvatar/UserListItem";    // Correct import
+import UserBadgeItem from "../UserAvatar/UserBadgeItem";
+import UserListItem from "../UserAvatar/UserListItem";
 
 const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -215,20 +215,21 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
             display="flex"
             justifyContent="center"
           >
-            {selectedChat.chatName}
+            {selectedChat ? selectedChat.chatName : "Group Chat"}
           </ModalHeader>
 
           <ModalCloseButton />
           <ModalBody display="flex" flexDir="column" alignItems="center">
             <Box w="100%" display="flex" flexWrap="wrap" pb={3}>
-              {selectedChat.users.map((u) => (
-                <UserBadgeItem
-                  key={u._id}
-                  user={u}
-                  admin={selectedChat.groupAdmin}
-                  handleFunction={() => handleRemove(u)}
-                />
-              ))}
+              {selectedChat &&
+                selectedChat.users.map((u) => (
+                  <UserBadgeItem
+                    key={u._id}
+                    user={u}
+                    admin={selectedChat.groupAdmin}
+                    handleFunction={() => handleRemove(u)}
+                  />
+                ))}
             </Box>
             <FormControl display="flex">
               <Input

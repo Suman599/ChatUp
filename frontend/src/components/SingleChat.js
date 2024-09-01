@@ -13,7 +13,7 @@ import ScrollableChat from './ScrollableChat';
 import io from 'socket.io-client';
 
 const ENDPOINT = "https://chatup-v8fv.onrender.com/";
-var socket, selectedChatCompare;
+let socket, selectedChatCompare;
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     const [messages, setMessages] = useState([]);
@@ -24,27 +24,18 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     const [isTyping, setIsTyping] = useState(false);
     const toast = useToast();
 
-    const defaultOptions = {
-        loop: true,
-        autoplay: true,
-        animationData: animationData,
-        rendererSettings: {
-            preserveAspectRatio: "xMidYMid slice",
-        },
-    };
-
     const { user, selectedChat, setSelectedChat } = ChatState();
 
     const fetchMessages = async () => {
         if (!selectedChat) return;
         try {
+            setLoading(true);
             const config = {
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${user.token}`
                 }
             };
-            setLoading(true);
             const { data } = await axios.get(`/api/message/${selectedChat._id}`, config);
             setMessages(data);
             setLoading(false);
@@ -52,7 +43,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         } catch (error) {
             toast({
                 title: "Error Occurred!",
-                description: "Failed to load the message",
+                description: "Failed to load the messages",
                 status: "error",
                 duration: 5000,
                 isClosable: true,
@@ -65,15 +56,14 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         socket = io(ENDPOINT);
         socket.emit("setup", user);
         socket.on('connected', () => setSocketConnected(true));
-        socket.on('typing', () => setTyping(true));
+        socket.on('typing', () => setIsTyping(true));
         socket.on('stop typing', () => setIsTyping(false));
 
         return () => {
-            socket.off('connected');
-            socket.off('typing');
-            socket.off('stop typing');
+            socket.disconnect(); // Properly disconnect the socket on unmount
+            socket.off(); // Remove all listeners
         };
-    }, [ENDPOINT, user]);
+    }, [user]);
 
     useEffect(() => {
         fetchMessages();
@@ -85,14 +75,14 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
             if (!selectedChatCompare || selectedChatCompare._id !== newMessageReceived.chat._id) {
                 // Handle notifications if needed
             } else {
-                setMessages([...messages, newMessageReceived]);
+                setMessages((prevMessages) => [...prevMessages, newMessageReceived]);
             }
         });
 
         return () => {
             socket.off('message received');
         };
-    }, [messages, selectedChatCompare]);
+    }, [selectedChatCompare]);
 
     const sendMessage = async (event) => {
         if (event.key === "Enter" && newMessage) {
@@ -110,7 +100,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                     chatId: selectedChat._id,
                 }, config);
                 socket.emit('new message', data);
-                setMessages([...messages, data]);
+                setMessages((prevMessages) => [...prevMessages, data]);
             } catch (error) {
                 toast({
                     title: "Error Occurred!",
@@ -135,7 +125,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
         let lastTypingTime = new Date().getTime();
         const timerLength = 3000;
 
-        const typingTimeout = setTimeout(() => {
+        setTimeout(() => {
             const timeNow = new Date().getTime();
             const timeDiff = timeNow - lastTypingTime;
             if (timeDiff >= timerLength && typing) {
@@ -143,8 +133,6 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                 setTyping(false);
             }
         }, timerLength);
-
-        return () => clearTimeout(typingTimeout); // Cleanup timeout on component unmount
     };
 
     return (
