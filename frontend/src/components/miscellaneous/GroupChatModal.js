@@ -1,4 +1,3 @@
-import { ViewIcon } from "@chakra-ui/icons";
 import {
   Modal,
   ModalOverlay,
@@ -13,7 +12,6 @@ import {
   Input,
   useToast,
   Box,
-  IconButton,
   Spinner,
 } from "@chakra-ui/react";
 import axios from "axios";
@@ -22,13 +20,13 @@ import { ChatState } from "../../Context/ChatProvider";
 import UserBadgeItem from "../UserAvatar/UserBadgeItem";
 import UserListItem from "../UserAvatar/UserListItem";
 
-const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
+const GroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [groupChatName, setGroupChatName] = useState();
+  const [groupChatName, setGroupChatName] = useState("");
   const [search, setSearch] = useState("");
   const [searchResult, setSearchResult] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [renameloading, setRenameLoading] = useState(false);
+  const [renameLoading, setRenameLoading] = useState(false);
   const toast = useToast();
 
   const { selectedChat, setSelectedChat, user } = ChatState();
@@ -36,6 +34,7 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
   const handleSearch = async (query) => {
     setSearch(query);
     if (!query) {
+      setSearchResult([]);
       return;
     }
 
@@ -46,10 +45,9 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const { data } = await axios.get(`/api/user?search=${search}`, config);
-      console.log(data);
-      setLoading(false);
+      const { data } = await axios.get(`/api/user?search=${query}`, config);
       setSearchResult(data);
+      setLoading(false);
     } catch (error) {
       toast({
         title: "Error Occurred!",
@@ -64,7 +62,7 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
   };
 
   const handleRename = async () => {
-    if (!groupChatName) return;
+    if (!groupChatName.trim()) return;
 
     try {
       setRenameLoading(true);
@@ -81,11 +79,16 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
         },
         config
       );
-
-      console.log(data._id);
       setSelectedChat(data);
       setFetchAgain(!fetchAgain);
       setRenameLoading(false);
+      toast({
+        title: "Group Name Updated!",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
     } catch (error) {
       toast({
         title: "Error Occurred!",
@@ -100,10 +103,10 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
     setGroupChatName("");
   };
 
-  const handleAddUser = async (user1) => {
-    if (selectedChat.users.find((u) => u._id === user1._id)) {
+  const handleAddUser = async (userToAdd) => {
+    if (selectedChat.users.find((u) => u._id === userToAdd._id)) {
       toast({
-        title: "User Already in group!",
+        title: "User Already in Group!",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -114,7 +117,7 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
 
     if (selectedChat.groupAdmin._id !== user._id) {
       toast({
-        title: "Only admins can add someone!",
+        title: "Only Admins Can Add Users!",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -134,11 +137,10 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
         `/api/chat/groupadd`,
         {
           chatId: selectedChat._id,
-          userId: user1._id,
+          userId: userToAdd._id,
         },
         config
       );
-
       setSelectedChat(data);
       setFetchAgain(!fetchAgain);
       setLoading(false);
@@ -153,13 +155,12 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
       });
       setLoading(false);
     }
-    setGroupChatName("");
   };
 
-  const handleRemove = async (user1) => {
-    if (selectedChat.groupAdmin._id !== user._id && user1._id !== user._id) {
+  const handleRemove = async (userToRemove) => {
+    if (selectedChat.groupAdmin._id !== user._id && userToRemove._id !== user._id) {
       toast({
-        title: "Only admins can remove someone!",
+        title: "Only Admins Can Remove Users!",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -179,12 +180,16 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
         `/api/chat/groupremove`,
         {
           chatId: selectedChat._id,
-          userId: user1._id,
+          userId: userToRemove._id,
         },
         config
       );
 
-      user1._id === user._id ? setSelectedChat() : setSelectedChat(data);
+      if (userToRemove._id === user._id) {
+        setSelectedChat(null);
+      } else {
+        setSelectedChat(data);
+      }
       setFetchAgain(!fetchAgain);
       fetchMessages();
       setLoading(false);
@@ -199,7 +204,6 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
       });
       setLoading(false);
     }
-    setGroupChatName("");
   };
 
   return (
@@ -242,7 +246,7 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
                 variant="solid"
                 colorScheme="teal"
                 ml={1}
-                isLoading={renameloading}
+                isLoading={renameLoading}
                 onClick={handleRename}
               >
                 Update
@@ -250,7 +254,7 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
             </FormControl>
             <FormControl>
               <Input
-                placeholder="Add User to group"
+                placeholder="Add User to Group"
                 mb={1}
                 onChange={(e) => handleSearch(e.target.value)}
               />
@@ -279,4 +283,4 @@ const UpdateGroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
   );
 };
 
-export default UpdateGroupChatModal;
+export default GroupChatModal;
