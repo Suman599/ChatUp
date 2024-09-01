@@ -210,7 +210,7 @@ const GroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
 
   return (
     <>
-      <IconButton display={{ base: "flex" }} icon={<ViewIcon />} onClick={onOpen} />
+      <IconButton display={{ base: "flex" }} icon={<ViewIcon/>} onClick={onOpen} />
 
       <Modal onClose={onClose} isOpen={isOpen} isCentered>
         <ModalOverlay />
@@ -258,6 +258,7 @@ const GroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
               <Input
                 placeholder="Add User to Group"
                 mb={1}
+                value={search}
                 onChange={(e) => handleSearch(e.target.value)}
               />
             </FormControl>
