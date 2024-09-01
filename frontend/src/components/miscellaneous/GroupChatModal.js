@@ -49,7 +49,6 @@ const GroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
       };
       const { data } = await axios.get(`/api/user?search=${query}`, config);
       setSearchResult(data);
-      setLoading(false);
     } catch (error) {
       toast({
         title: "Error Occurred!",
@@ -59,6 +58,7 @@ const GroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
         isClosable: true,
         position: "bottom-left",
       });
+    } finally {
       setLoading(false);
     }
   };
@@ -83,7 +83,6 @@ const GroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
       );
       setSelectedChat(data);
       setFetchAgain(!fetchAgain);
-      setRenameLoading(false);
       toast({
         title: "Group Name Updated!",
         status: "success",
@@ -94,19 +93,20 @@ const GroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
     } catch (error) {
       toast({
         title: "Error Occurred!",
-        description: error.response.data.message,
+        description: error.response?.data?.message || "An unexpected error occurred",
         status: "error",
         duration: 5000,
         isClosable: true,
         position: "bottom",
       });
+    } finally {
       setRenameLoading(false);
+      setGroupChatName("");
     }
-    setGroupChatName("");
   };
 
   const handleAddUser = async (userToAdd) => {
-    if (selectedChat.users.find((u) => u._id === userToAdd._id)) {
+    if (selectedChat.users.some((u) => u._id === userToAdd._id)) {
       toast({
         title: "User Already in Group!",
         status: "error",
@@ -117,7 +117,7 @@ const GroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
       return;
     }
 
-    if (selectedChat.groupAdmin._id !== user._id) {
+    if (!selectedChat.groupAdmin || selectedChat.groupAdmin._id !== user._id) {
       toast({
         title: "Only Admins Can Add Users!",
         status: "error",
@@ -145,22 +145,22 @@ const GroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
       );
       setSelectedChat(data);
       setFetchAgain(!fetchAgain);
-      setLoading(false);
     } catch (error) {
       toast({
         title: "Error Occurred!",
-        description: error.response.data.message,
+        description: error.response?.data?.message || "An unexpected error occurred",
         status: "error",
         duration: 5000,
         isClosable: true,
         position: "bottom",
       });
+    } finally {
       setLoading(false);
     }
   };
 
   const handleRemove = async (userToRemove) => {
-    if (selectedChat.groupAdmin._id !== user._id && userToRemove._id !== user._id) {
+    if (!selectedChat.groupAdmin || (selectedChat.groupAdmin._id !== user._id && userToRemove._id !== user._id)) {
       toast({
         title: "Only Admins Can Remove Users!",
         status: "error",
@@ -194,23 +194,23 @@ const GroupChatModal = ({ fetchMessages, fetchAgain, setFetchAgain }) => {
       }
       setFetchAgain(!fetchAgain);
       fetchMessages();
-      setLoading(false);
     } catch (error) {
       toast({
         title: "Error Occurred!",
-        description: error.response.data.message,
+        description: error.response?.data?.message || "An unexpected error occurred",
         status: "error",
         duration: 5000,
         isClosable: true,
         position: "bottom",
       });
+    } finally {
       setLoading(false);
     }
   };
 
   return (
     <>
-      <IconButton display={{ base: "flex" }} icon={<ViewIcon/>} onClick={onOpen} />
+      <IconButton display={{ base: "flex" }} icon={<ViewIcon />} onClick={onOpen} />
 
       <Modal onClose={onClose} isOpen={isOpen} isCentered>
         <ModalOverlay />
