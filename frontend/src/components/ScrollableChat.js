@@ -44,4 +44,4 @@ const ScrollableChat = ({messages}) => {
   )
 }
 
-export default ScrollableChat
+export default ScrollableChat;

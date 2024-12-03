@@ -19,10 +19,10 @@ import {
 } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import { BellIcon, ChevronDownIcon } from "@chakra-ui/icons";
-import { Avatar } from "@chakra-ui/avatar";
+import { Avatar } from "@chakra-ui/react";
 import { ChatState } from './../../Context/ChatProvider';
 import ProfileModal from './ProfileModal';
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'; // Updated to useNavigate
 import { useDisclosure } from '@chakra-ui/hooks';
 import axios from 'axios';
 import ChatLoading from '../ChatLoading';
@@ -34,13 +34,13 @@ const SideDrawer = () => {
   const [loading, setLoading] = useState(false);
   const [loadingChat, setLoadingChat] = useState(false);
   const { user, setSelectedChat, chats, setChats } = ChatState();
-  const history = useHistory();
+  const navigate = useNavigate(); // Updated to use useNavigate
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
   const logoutHandler = () => {
     localStorage.removeItem("userInfo");
-    history.push("/");
+    navigate("/"); // Updated from history.push
   };
 
   const handleSearch = async () => {
@@ -183,6 +183,6 @@ const SideDrawer = () => {
       </Drawer>
     </>
   );
-}
+};
 
 export default SideDrawer;

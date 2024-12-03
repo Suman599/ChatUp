@@ -76,6 +76,6 @@ app.use(notFound);
 app.use(errorHandler);
 
 // Start the server
-server.listen(5000, () => {
-    console.log("Server started on port 5000");
+server.listen(5001, () => {
+    console.log("Server started on port 5001");
 });
