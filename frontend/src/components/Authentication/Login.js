@@ -48,17 +48,19 @@ const Login = () => {
             localStorage.setItem("userInfo", JSON.stringify(data));
             setLoading(false);
             navigate('/chats');
-        } catch (error) {
-            toast({
-                title: "Error occurred!",
-                description: error.response ? error.response.data.message : error.message,
-                status: "error",
-                duration: 5000,
-                isClosable: true,
-                position: "bottom",
-            });
-            setLoading(false);
-        }
+        }catch (error) {
+  console.error(error);  // Log the error for debugging
+  toast({
+    title: "Error occurred!",
+    description: error.response ? error.response.data.message : error.message,
+    status: "error",
+    duration: 5000,
+    isClosable: true,
+    position: "bottom",
+  });
+  setLoading(false);
+}
+
     };
 
     return (
